@@ -2,7 +2,7 @@
 # Functions to determine transversal properties of (finite degree)
 # permutation groups.
 #
-# Leonard Soicher, 21 February 2026.
+# Leonard Soicher, 22 March 2026.
 #
 TRANSVERSALPROPERTIES_tpexternal_maxnum:=1;
 # for each rep, the maximum number of shortreps to be handled by the 
@@ -210,7 +210,7 @@ tpmain:=function(G,rep,shortreps)
 # k-partition of  [1..n],  there is a transversal in 
 # the G-orbit of the k-set rep.
 # 
-# The parameter  shortreps  should be a list of lex-least
+# The parameter  shortreps  should be a list consisting of the lex-least
 # representatives for the  G-orbits  of  (k-1)-subsets of  [1..n].
 #
 # It is assumed that  2<=k<=n. 
@@ -486,4 +486,184 @@ for rep in reps do
    fi; 
 od;
 return false;
+end;
+
+StrongTransversalProperty := function(G,k,orb,A)
+#
+# Documentation required!
+#
+local strongtransversalproperty,n;
+
+strongtransversalproperty := function(A,asum)
+#
+# Wrapped recursive function doing all the real work.
+# 
+# The variables  k,  n,  and  orb  are global.
+#
+# asum  is the number of elements of  A  that are  < k.
+#
+local elm,a,b,K,r,s,tp,i,kpoint,R,S;
+R:=[];
+S:=[];
+for elm in orb do
+   a:=elm[1][1];
+   b:=elm[1][2]; 
+   if A[a]=A[b] then
+      K:=Concatenation(elm[2],[a]);
+      if IsInjectiveListTrans(K,A) then
+         # A[K[1]],...,A[K[k]] are distinct
+         kpoint:=First(K,x->A[x]=k);
+         if kpoint=a then
+            # either a or b (or both) cannot be in P[k].
+            if not (a in R) and not (b in R) then
+               AddSet(S,[a,b]);
+            fi;
+         elif not (kpoint in R) then
+            AddSet(R,kpoint);
+            S:=Filtered(S,x->not (kpoint in x));
+         fi;
+         if asum+Length(R) > (k-1)*n/k then
+            return true;
+         elif Length(S)>0 and asum+Length(R)+1 > (k-1)*n/k then
+            return true;
+         fi;
+      fi;
+   fi;
+od;
+if R=[] and S=[] then
+   return GRAPE_NumbersToSets(A);
+fi;
+if R<>[] then
+   r:=Remove(R);
+   for i in [1..k-1] do
+      A[r]:=i;
+      tp:=strongtransversalproperty(A,asum+1);
+      if tp<>true then
+         return tp;
+      fi;
+      A[r]:=k;
+   od;
+   return true;
+fi;
+# Here, we must have  R=[]  and  S<>[]. 
+s:=Remove(S);
+r:=s[1];
+for i in [1..k-1] do
+   A[r]:=i;
+   tp:=strongtransversalproperty(A,asum+1);
+   if tp<>true then
+      return tp;
+   fi;
+   A[r]:=k;
+od;
+r:=s[2];
+for i in [1..k-1] do
+   A[r]:=i;
+   tp:=strongtransversalproperty(A,asum+1); 
+   if tp<>true then
+      return tp;
+   fi;
+   A[r]:=k;
+od;
+return true;
+end;
+
+#
+# begin StrongTransversalProperty 
+#
+n:=LargestMovedPoint(G);
+if k<2 or k>n-1 then
+   Error("must have 2 <= <k> <= LargestMovedPoint(<G>)-1");
+fi;
+return strongtransversalproperty(A,Number(A,a->a<k));
+end;
+
+strongtpmain:=function(G,rep,shortreps) 
+#
+# Let  G  be a permutation group on  [1..n],  where  n  is the
+# largest point moved by  G,  and let  rep  be a tuple  [T,U],  where
+# T  is a 2-subset of  [1..n]  and  U  is a  (k-1)-subset  of  [1..n]
+# disjoint from  T.  It is assumed that  2<=k<=n-1. 
+# The parameter  shortreps  should be a list consisting of the lex-least
+# representatives for the  G-orbits  of  (k-1)-subsets of  [1..n].
+#
+# Then this boolean function returns `true' iff  rep  is a witness
+# for the "strong k-et" property of  G, that is, for every  k-partition
+# P  of  [1..n],  there is a  g  in  G  such that:
+#    - T[1]^g  and  T[2]^g  are in the same part of  P 
+#    - Union([T[1]],U)^g  is a transversal of  P.
+#  
+local n,k,orb,result,i,A,tp;
+n:=LargestMovedPoint(G);
+k:=Length(rep[2])+1;
+if k<2 or k>n-1 then
+   Error("must have 2 <= <k> <= LargestMovedPoint(<G>)-1");
+fi;
+orb:=Set(Orbit(G,rep,OnTuplesSets)); 
+for i in [1..Length(shortreps)] do 
+   A:=ListWithIdenticalEntries(n,k);
+   A{shortreps[i]}:=[1..k-1];
+   Info(TRANSVERSALPROPERTIES_info,3,
+      "Runtimes in milliseconds before calling StrongTransversalProperty: ",
+      Runtimes());
+   tp:=StrongTransversalProperty(G,k,orb,A);
+   Info(TRANSVERSALPROPERTIES_info,3,
+      "Runtimes in milliseconds after calling StrongTransversalProperty: ",
+      Runtimes());
+   if tp<>true then
+      Info(TRANSVERSALPROPERTIES_info,2,
+         "strongtpmain returns false for rep=",rep,"  shortrep=",shortreps[i],
+         "  first k-1 parts = ",tp{[1..k-1]});
+      return false;
+   fi;
+od;
+return true;
+end;
+
+StrongUniversalTransversalProperty := function(G,k)
+#
+# Suppose  G  is a permutation group on the domain
+# [1..n],  where  n  is the largest point moved by  G,  and
+# suppose  k  is an integer, with  2 <= k <= n-1.
+#
+# Then this function returns `true' if  G  has the property 
+# strong k-ut.  Otherwise, this function returns `false'.
+#
+local n,H,reps,L,M,rep,shortreps,shortrep,tp,A,stabsizes;
+if not (IsPermGroup(G) and IsInt(k)) then
+   Error("usage: StrongUniversalTransversalProperty( <PermGrp>, <Int> )");
+fi;
+n:=LargestMovedPoint(G);
+if k<2 or k>n-1 then
+   Error("must have 2 <= <k> <= LargestMovedPoint(<G>)-1");
+fi;
+shortreps:=LeastSetRepresentatives(G,k-1);
+reps:=[];
+for L in LeastSetRepresentatives(G,k+1) do
+   H:=Stabilizer(G,L,OnSets);
+   for M in Set(Orbits(H,Combinations(L,2),OnSets),Set) do
+      Add(reps,[M[1],Difference(L,M[1])]);
+   od;
+od;
+Info(TRANSVERSALPROPERTIES_info,1,
+      "StrongUniversalTransversalProperty: Length(shortreps)=",
+      Length(shortreps)," Length(reps)=",Length(reps));
+stabsizes:=List(reps,x->Size(Stabilizer(G,x,OnTuplesSets)));
+SortParallel(stabsizes,reps,function(x,y) return x>y; end);
+Info(TRANSVERSALPROPERTIES_info,2,
+      "StrongUniversalTransversalProperty: stabsizes of reps=",
+       Collected(stabsizes));
+for rep in reps do
+   Info(TRANSVERSALPROPERTIES_info,2,
+      "StrongUniversalTransversalProperty: testing orbit of: ",rep);
+   tp:=strongtpmain(G,rep,shortreps);
+   if tp<>true then
+      # G does not have the strong k-ut property
+      Info(TRANSVERSALPROPERTIES_info,1,
+         "StrongUniversalTransversalProperty: strong k-ut does not hold. ",
+         "Orbit of ",rep," fails.");
+      return false;
+   fi; 
+od;
+return true;
 end;
