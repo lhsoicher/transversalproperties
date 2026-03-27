@@ -661,7 +661,7 @@ od;
 return true;
 end;
 
-StrongUniversalTransversalProperty := function(G,k)
+StrongUniversalTransversalProperty := function(G,k,optional...)
 #
 # Suppose  G  is a permutation group on the domain
 # [1..n],  where  n  is the largest point moved by  G,  and
@@ -670,18 +670,30 @@ StrongUniversalTransversalProperty := function(G,k)
 # Then this function returns `true' if  G  has the property 
 # strong k-ut.  Otherwise, this function returns `false'.
 #
-local n,H,reps,L,M,rep,shortreps,shortrep,tp,A,stabsizes;
+# The optional parameter optional[1] (default: G) must be a 
+# permutation group on  [1..n],  containing  G  and normalizing  G.
+# The use of this parameter may save some redundant checks of G-orbits.
+# 
+local n,H,reps,L,M,rep,shortreps,shortrep,C,tp,A,stabsizes;
 if not (IsPermGroup(G) and IsInt(k)) then
-   Error("usage: StrongUniversalTransversalProperty( <PermGrp>, <Int> )");
+   Error("usage: StrongUniversalTransversalProperty( <PermGrp>, <Int> [, <PermGrp> ] )");
 fi;
 n:=LargestMovedPoint(G);
 if k<2 or k>n-1 then
    Error("must have 2 <= <k> <= LargestMovedPoint(<G>)-1");
 fi;
+if Length(optional)>0 then
+   C:=optional[1];
+   if not (IsPermGroup(C) and LargestMovedPoint(C)=n and IsSubgroup(C,G) and IsNormal(C,G)) then
+      Error("<C> must be a permutation group on the same domain as <G>, containing and normalizing <G>");
+   fi;
+else
+   C:=G;
+fi;
 shortreps:=LeastSetRepresentatives(G,k-1);
 reps:=[];
-for L in LeastSetRepresentatives(G,k+1) do
-   H:=Stabilizer(G,L,OnSets);
+for L in LeastSetRepresentatives(C,k+1) do
+   H:=Stabilizer(C,L,OnSets);
    for M in Set(Orbits(H,Combinations(L,2),OnSets),Set) do
       Add(reps,[M[1],Difference(L,M[1])]);
    od;
