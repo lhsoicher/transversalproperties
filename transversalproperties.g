@@ -502,7 +502,7 @@ strongtransversalproperty := function(A,asum)
 #
 # asum  is the number of elements of  A  that are  < k.
 #
-local elm,a,b,K,r,s,tp,i,kpoint,R,S;
+local elm,a,b,K,r,s,tp,i,kpoint,R,S,gamma;
 R:=[];
 S:=[];
 for elm in orb do
@@ -515,23 +515,32 @@ for elm in orb do
          kpoint:=First(K,x->A[x]=k);
          if kpoint=a then
             # either a or b (or both) cannot be in P[k].
-            if not (a in R) and not (b in R) then
+            if not ([a,b] in S) and not (a in R) and not (b in R) then
                AddSet(S,[a,b]);
+               if asum+Length(R)+1 > (k-1)*n/k then
+                  return true;
+               fi;
             fi;
          elif not (kpoint in R) then
             AddSet(R,kpoint);
             S:=Filtered(S,x->not (kpoint in x));
-         fi;
-         if asum+Length(R) > (k-1)*n/k then
-            return true;
-         elif Length(S)>0 and asum+Length(R)+1 > (k-1)*n/k then
-            return true;
+            if asum+Length(R) > (k-1)*n/k then
+               return true;
+            elif Length(S)>0 and asum+Length(R)+1 > (k-1)*n/k then
+               return true;
+            fi;
          fi;
       fi;
    fi;
 od;
 if R=[] and S=[] then
    return GRAPE_NumbersToSets(A);
+fi;
+if Length(S)>1 and asum+Length(R)+Length(S)>(k-1)*n/k then
+   gamma:=Graph(Group(()),S,{x,g}->x,{x,y}->Length(Intersection(x,y))=1,true);
+   if asum+Length(R)+Length(IndependentSet(gamma)) > (k-1)*n/k then
+      return true;
+   fi;
 fi;
 if R<>[] then
    r:=Remove(R);
