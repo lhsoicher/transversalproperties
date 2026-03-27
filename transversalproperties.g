@@ -162,8 +162,9 @@ local v,K,r,tp,i,kpoint;
 for v in Adjacency(orbgraph,newpoint) do
    K:=Concatenation(orbgraph.names[v],[newpoint]);
    if IsInjectiveListTrans(K,A) then
-      # A[K[1]],...,A[K[k]] are distinct
+      # A[K[1]],...,A[K[k]]  are distinct, so  K  forms a transversal of  P.
       kpoint:=First(K,x->A[x]=k);
+      # kpoint  cannot be in  P[k].
       AddSet(R,kpoint);
       if asum+Length(R) > (k-1)*n/k then
          return true;
@@ -490,7 +491,33 @@ end;
 
 StrongTransversalProperty := function(G,k,orb,A)
 #
-# Documentation required!
+# Let  G  be a permutation group on  [1..n],  where  n  is the
+# largest point moved by  G,  and let  orb  be a  G-orbit  of a tuple  
+# [T,U],  where  T  is a 2-subset of  [1..n]  and  U  is a  (k-1)-subset  
+# of  [1..n]  disjoint from  T.  It is assumed that  2<=k<=n-1. 
+#
+# Let  A  represent an ordered  k-partition  P = [P[1],...,P[k]]
+# of  [1..n],  where  A  is a dense list of length  n  of 
+# elements of  [1..k],  such that  A[i]=j  means that  i  is 
+# in the  j-th  part  P[j]  of  P. 
+#
+# Furthermore, suppose that  |P[1]|+...+|P[k-1]|<=(k-1)*n/k.
+# 
+# Then this function returns `true' if for every  k-partition  Q  of
+# [1..n]  satisfying:
+#   - Q[i]  contains  P[i]  for  i=1,...,k-1,
+#   - |Q[k]| >= n/k,
+# there is an element  g in G  such that: 
+#    - T[1]^g  and  T[2]^g  are in the same part of  Q, 
+#    - Union([T[1]],U)^g  is a transversal of  Q.
+#
+# Otherwise, this function returns a  k-partition  Q  of  [1..n], 
+# satisfying: 
+#   - Q[i]  contains  P[i]  for  i=1,...,k-1,
+#   - |Q[k]| >= n/k,
+# such that there is *no* element  g in G  such that: 
+#    - T[1]^g  and  T[2]^g  are in the same part of  Q, 
+#    - Union([T[1]],U)^g  is a transversal of  Q.
 #
 local strongtransversalproperty,n;
 
@@ -506,15 +533,19 @@ local elm,a,b,K,r,s,tp,i,kpoint,R,S,gamma;
 R:=[];
 S:=[];
 for elm in orb do
+   # loop invariant: 
+   #   -  R  is a subset of  [1..n],
+   #   -  S  is a set of  2-subsets  of  [1..n],  such that
+   #      every element of  S  is disjoint from  R.
    a:=elm[1][1];
    b:=elm[1][2]; 
    if A[a]=A[b] then
       K:=Concatenation(elm[2],[a]);
       if IsInjectiveListTrans(K,A) then
-         # A[K[1]],...,A[K[k]] are distinct
+         # A[K[1]],...,A[K[k]] are distinct, so  K  forms a transversal of  P.
          kpoint:=First(K,x->A[x]=k);
          if kpoint=a then
-            # either a or b (or both) cannot be in P[k].
+            # either  a  or  b  (or both) cannot be in  P[k].
             if not ([a,b] in S) and not (a in R) and not (b in R) then
                AddSet(S,[a,b]);
                if asum+Length(R)+1 > (k-1)*n/k then
@@ -522,6 +553,7 @@ for elm in orb do
                fi;
             fi;
          elif not (kpoint in R) then
+            # kpoint  cannot be in  P[k].
             AddSet(R,kpoint);
             S:=Filtered(S,x->not (kpoint in x));
             if asum+Length(R) > (k-1)*n/k then
