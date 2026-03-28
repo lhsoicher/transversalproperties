@@ -138,9 +138,11 @@ TransversalProperty := function(G,k,orbgraph,A,R,newpoint,done)
 #   - |Q[k]| >= n/k,
 # there is a  k-set  in  orb  forming a transversal of  Q.
 #
-# Otherwise, this function returns a  k-partition  Q  of  [1..n], 
-# satisfying the properties above with  R=[],  such that no
-# k-set  in  orb  is a transversal of  Q.
+# The method is to try to build a counterexample, and to return 
+# `true' if (provably) no counterexample exists. 
+# Otherwise, this function returns a counterexample, that is,
+# a  k-partition  Q  of  [1..n], satisfying the properties above 
+# with  R=[],  such that no k-set  in  orb  is a transversal of  Q.
 #
 # It is assumed that  done  is a set of  (k-1)-subsets of  [1..n]
 # such that, for every  D  in  done:
@@ -164,9 +166,10 @@ for v in Adjacency(orbgraph,newpoint) do
    if IsInjectiveListTrans(K,A) then
       # A[K[1]],...,A[K[k]]  are distinct, so  K  forms a transversal of  P.
       kpoint:=First(K,x->A[x]=k);
-      # kpoint  cannot be in  P[k].
       AddSet(R,kpoint);
+      # No element of  R  can be in the  k-th  part of a counterexample.
       if asum+Length(R) > (k-1)*n/k then
+         # No counterexample exists.
          return true;
       elif done<>[] then
          if SmallestImageSet(G,Difference(K,[kpoint])) in done then
@@ -176,15 +179,17 @@ for v in Adjacency(orbgraph,newpoint) do
    fi;
 od;
 if R=[] then
-   #  A  defines a k-partition such that no element of  orb  is
-   # a transversal. 
+   #  A  defines a counterexample, so we return the ordered partition 
+   # defined by  A.
    return GRAPE_NumbersToSets(A);
 fi;
 r:=Remove(R);
 for i in [1..k-1] do
+   # Try to build a counterexample with  r  in the  i-th part.
    A[r]:=i;
    tp:=transversalproperty(A,asum+1,ShallowCopy(R),r);
    if tp<>true then
+      # tp  is a counterexample.
       return tp;
    fi;
    A[r]:=k;
@@ -511,8 +516,10 @@ StrongTransversalProperty := function(G,k,orb,A)
 #    - T[1]^g  and  T[2]^g  are in the same part of  Q, 
 #    - Union([T[1]],U)^g  is a transversal of  Q.
 #
-# Otherwise, this function returns a  k-partition  Q  of  [1..n], 
-# satisfying: 
+# The method is to try to build a counterexample, and to return 
+# `true' if (provably) no counterexample exists. 
+# Otherwise, this function returns a counterexample, that is,
+# a  k-partition  Q  of  [1..n],  satisfying: 
 #   - Q[i]  contains  P[i]  for  i=1,...,k-1,
 #   - |Q[k]| >= n/k,
 # such that there is *no* element  g in G  such that: 
@@ -531,7 +538,12 @@ strongtransversalproperty := function(A,asum)
 #
 local elm,a,b,K,r,s,tp,i,kpoint,R,S,gamma;
 R:=[];
+# R  is maintained as a subset of  [1..n],  such that no element
+# of  R  can be in the  k-th  part of a counterexample. 
 S:=[];
+# S  is maintained as a set of 2-subsets of  [1..n],  such that,
+# if  [a,b] in S,  then either  a  or  b  (or both) cannot be in
+# the  k-th  part of a counterexample.
 for elm in orb do
    # loop invariant: 
    #   -  R  is a subset of  [1..n],
@@ -545,15 +557,17 @@ for elm in orb do
          # A[K[1]],...,A[K[k]] are distinct, so  K  forms a transversal of  P.
          kpoint:=First(K,x->A[x]=k);
          if kpoint=a then
-            # either  a  or  b  (or both) cannot be in  P[k].
+            # Either  a  or  b  (or both) cannot be in the  k-th  part
+            # of a counterexample.
             if not ([a,b] in S) and not (a in R) and not (b in R) then
                AddSet(S,[a,b]);
                if asum+Length(R)+1 > (k-1)*n/k then
+                  # No counterexample exists.
                   return true;
                fi;
             fi;
          elif not (kpoint in R) then
-            # kpoint  cannot be in  P[k].
+            # kpoint  cannot be in the  k-th  part of a counterexample.
             AddSet(R,kpoint);
             S:=Filtered(S,x->not (kpoint in x));
             if asum+Length(R) > (k-1)*n/k then
@@ -566,20 +580,25 @@ for elm in orb do
    fi;
 od;
 if R=[] and S=[] then
+   # A  represents a counterexample, so we return this (ordered) partition.
    return GRAPE_NumbersToSets(A);
 fi;
 if Length(S)>1 and asum+Length(R)+Length(S)>(k-1)*n/k then
    gamma:=Graph(Group(()),S,{x,g}->x,{x,y}->Length(Intersection(x,y))=1,true);
    if asum+Length(R)+Length(IndependentSet(gamma)) > (k-1)*n/k then
+      # There are not enough elements left from  [1..n]  to form the 
+      # k-th  part of a counterexample. 
       return true;
    fi;
 fi;
 if R<>[] then
    r:=Remove(R);
    for i in [1..k-1] do
+      # Try to build a counterexample with  r  in the  i-th  part.
       A[r]:=i;
       tp:=strongtransversalproperty(A,asum+1);
       if tp<>true then
+         #  tp  is a counterexample.
          return tp;
       fi;
       A[r]:=k;
@@ -591,6 +610,7 @@ s:=Remove(S);
 r:=s[1];
 for i in [1..k-1] do
    A[r]:=i;
+   # Try to build a counterexample with  r  in the  i-th  part.
    tp:=strongtransversalproperty(A,asum+1);
    if tp<>true then
       return tp;
@@ -600,6 +620,7 @@ od;
 r:=s[2];
 for i in [1..k-1] do
    A[r]:=i;
+   # Try to build a counterexample with  r  in the  i-th  part.
    tp:=strongtransversalproperty(A,asum+1); 
    if tp<>true then
       return tp;
