@@ -1,6 +1,9 @@
-/* This is a C version of my GAP function TransversalProperty.
+/* This program includes a C version of my GAP function
+   TransversalProperty, which is applied for a given G-orbit of
+   k-subsets of {1,...,n} (encoded by adj and cosetreps for G assumed
+   to be transitive on {1,...,n}) and a given sequence of shortreps.
 
-   Leonard Soicher, 16/02/2026 */
+   Leonard Soicher, 30/03/2026 */
 
 #include <stdlib.h>
 #include <stddef.h>
@@ -102,7 +105,7 @@ for(i=2;i<=binom;i++)
          for(jj=1;jj<j;jj++)
             comb[i][jj]=comb[i-1][jj];
          comb[i][j]=comb[i-1][j]+1;
-         for(jj=jj+1;jj<=k;jj++)
+         for(jj=j+1;jj<=k;jj++)
             comb[i][jj]=comb[i][jj-1]+1;
          break;
          }   
@@ -290,7 +293,7 @@ comb=Combinations(n,k-1);
 A=IntList(n);
 if((R=(bool *)malloc(((unsigned)(n+1))*sizeof(bool)))==NULL)
    {
-   fprintf(stderr,"\nmain error: malloc failed\n"); 
+   fprintf(stderr,"\nmaking R error: malloc failed\n"); 
    exit(EXIT_FAILURE);
    }
 result=true;  /* initially */
