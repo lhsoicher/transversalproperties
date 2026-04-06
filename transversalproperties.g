@@ -2,7 +2,7 @@
 # Functions to determine transversal properties of (finite degree)
 # permutation groups.
 #
-# Leonard Soicher, 22 March 2026.
+# Leonard Soicher, 06 April 2026.
 #
 TRANSVERSALPROPERTIES_tpexternal_maxnum:=1;
 # for each rep, the maximum number of shortreps to be handled by the 
@@ -13,6 +13,11 @@ TRANSVERSALPROPERTIES_tpexternal_exe:="/home/lsoicher/bin/tpexternal";
 
 TRANSVERSALPROPERTIES_tmpdir:=DirectoryTemporary();
 # for files to communicate with tpexternal
+
+TRANSVERSALPROPERTIES_testmode:=false;
+# Normally should be set to false, but if set to true then certain 
+# theoretical shortcuts are *not* used, in order to further test 
+# the main code.
 
 DeclareInfoClass("TRANSVERSALPROPERTIES_info");
 SetInfoLevel(TRANSVERSALPROPERTIES_info,2);
@@ -321,7 +326,7 @@ UniversalTransversalProperty := function(G,k,optional...)
 #
 # Suppose  G  is a permutation group on the domain
 # [1..n],  where  n  is the largest point moved by  G,  and
-# suppose k is an integer, with  2 <= k <= n.
+# suppose  k  is an integer, with  2 <= k <= n.
 #
 # Then this function returns `true' if  G  has the property k-ut, 
 # that is, for every  k-partition  P  of  [1..n]  and every 
@@ -499,7 +504,7 @@ StrongTransversalProperty := function(G,k,orb,A)
 # Let  G  be a permutation group on  [1..n],  where  n  is the
 # largest point moved by  G,  and let  orb  be a  G-orbit  of a tuple  
 # [T,U],  where  T  is a 2-subset of  [1..n]  and  U  is a  (k-1)-subset  
-# of  [1..n]  disjoint from  T.  It is assumed that  2<=k<=n-1. 
+# of  [1..n]  disjoint from  T.  It is assumed that  2 <= k <= n-1. 
 #
 # Let  A  represent an ordered  k-partition  P = [P[1],...,P[k]]
 # of  [1..n],  where  A  is a dense list of length  n  of 
@@ -510,9 +515,12 @@ StrongTransversalProperty := function(G,k,orb,A)
 # 
 # Then this function returns `true' if for every  k-partition  Q  of
 # [1..n]  satisfying:
+#
 #   - Q[i]  contains  P[i]  for  i=1,...,k-1,
 #   - |Q[k]| >= n/k,
+#
 # there is an element  g in G  such that: 
+#
 #    - T[1]^g  and  T[2]^g  are in the same part of  Q, 
 #    - Union([T[1]],U)^g  is a transversal of  Q.
 #
@@ -520,9 +528,12 @@ StrongTransversalProperty := function(G,k,orb,A)
 # `true' if (provably) no counterexample exists. 
 # Otherwise, this function returns a counterexample, that is,
 # a  k-partition  Q  of  [1..n],  satisfying: 
+#
 #   - Q[i]  contains  P[i]  for  i=1,...,k-1,
 #   - |Q[k]| >= n/k,
+#
 # such that there is *no* element  g in G  such that: 
+#
 #    - T[1]^g  and  T[2]^g  are in the same part of  Q, 
 #    - Union([T[1]],U)^g  is a transversal of  Q.
 #
@@ -546,8 +557,8 @@ S:=[];
 # the  k-th  part of a counterexample.
 for elm in orb do
    # loop invariant: 
-   #   -  R  is a subset of  [1..n],
-   #   -  S  is a set of  2-subsets  of  [1..n],  such that
+   #   -  R  is a subset of  P[k],
+   #   -  S  is a set of  2-subsets  of  P[k],  such that
    #      every element of  S  is disjoint from  R.
    a:=elm[1][1];
    b:=elm[1][2]; 
@@ -645,13 +656,14 @@ strongtpmain:=function(G,rep,shortreps)
 # Let  G  be a permutation group on  [1..n],  where  n  is the
 # largest point moved by  G,  and let  rep  be a tuple  [T,U],  where
 # T  is a 2-subset of  [1..n]  and  U  is a  (k-1)-subset  of  [1..n]
-# disjoint from  T.  It is assumed that  2<=k<=n-1. 
+# disjoint from  T.  It is assumed that  2 <= k <= n-1. 
 # The parameter  shortreps  should be a list consisting of the lex-least
 # representatives for the  G-orbits  of  (k-1)-subsets of  [1..n].
 #
 # Then this boolean function returns `true' iff  rep  is a witness
 # for the "strong k-et" property of  G, that is, for every  k-partition
 # P  of  [1..n],  there is a  g  in  G  such that:
+#
 #    - T[1]^g  and  T[2]^g  are in the same part of  P 
 #    - Union([T[1]],U)^g  is a transversal of  P.
 #  
@@ -695,7 +707,7 @@ StrongUniversalTransversalProperty := function(G,k,optional...)
 # permutation group on  [1..n],  containing  G  and normalizing  G.
 # The use of this parameter may save some redundant checks of G-orbits.
 # 
-local n,H,reps,L,M,rep,shortreps,shortrep,C,tp,A,stabsizes;
+local n,H,reps,found,LL,L,M,rep,shortreps,shortrep,C,tp,A,stabsizes,testmode;
 if not (IsPermGroup(G) and IsInt(k)) then
    Error("usage: StrongUniversalTransversalProperty( <PermGrp>, <Int> [, <PermGrp> ] )");
 fi;
@@ -711,17 +723,55 @@ if Length(optional)>0 then
 else
    C:=G;
 fi;
+testmode:=TRANSVERSALPROPERTIES_testmode;
+if (not testmode) and Transitivity(G,[1..n])>k then
+   Info(TRANSVERSALPROPERTIES_info,1,
+         "StrongUniversalTransversalProperty: Transitivity(G,[1..n])>k");
+   return true;
+fi;
 shortreps:=LeastSetRepresentatives(G,k-1);
+if (not testmode) and Length(shortreps)>1 then
+   Info(TRANSVERSALPROPERTIES_info,1,
+      "StrongUniversalTransversalProperty: G is not (k-1)-homogeneous");
+   return false;
+fi;
+LL:=LeastSetRepresentatives(C,k+1);
+if not testmode then
+   if Length(LeastSetRepresentatives(G,k))>1 then
+      # G is not k-homogeneous
+      if not UniversalTransversalProperty(G,k,C) then
+         Info(TRANSVERSALPROPERTIES_info,1,
+            "StrongUniversalTransversalProperty: G does not satisfy k-ut");
+         return false;
+      fi;
+   else
+      found:=false;
+      for L in LL do
+         H:=Action(Stabilizer(G,L,OnSets),L);
+         if LargestMovedPoint(H)<Length(L)
+            or Length(LeastSetRepresentatives(H,2))>1 then
+            found:=true;
+            break;
+         fi;
+      od;
+      if not found then
+         Info(TRANSVERSALPROPERTIES_info,1,
+            "StrongUniversalTransversalProperty: ",
+            "for every (k+1)-subset of [1..n], the action of its ",
+            "G-stabilizer on it is 2-homogeneous");
+         return true;
+      fi;
+   fi;
+fi;
 reps:=[];
-for L in LeastSetRepresentatives(C,k+1) do
+for L in LL do
    H:=Stabilizer(C,L,OnSets);
    for M in Set(Orbits(H,Combinations(L,2),OnSets),Set) do
       Add(reps,[M[1],Difference(L,M[1])]);
    od;
 od;
 Info(TRANSVERSALPROPERTIES_info,1,
-      "StrongUniversalTransversalProperty: Length(shortreps)=",
-      Length(shortreps)," Length(reps)=",Length(reps));
+      "StrongUniversalTransversalProperty: Length(reps)=",Length(reps));
 stabsizes:=List(reps,x->Size(Stabilizer(G,x,OnTuplesSets)));
 SortParallel(stabsizes,reps,function(x,y) return x>y; end);
 Info(TRANSVERSALPROPERTIES_info,2,
