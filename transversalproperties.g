@@ -1,26 +1,46 @@
 #
-# Functions to determine transversal properties of (finite degree)
-# permutation groups.
+# Leonard Soicher, 10 April 2026.
 #
-# Leonard Soicher, 06 April 2026.
+# This file contains functions to determine the properties k-et, k-ut,
+# and strong k-ut of given (finite degree) permutation groups.
 #
-TRANSVERSALPROPERTIES_tpexternal_maxnum:=1;
-# for each rep, the maximum number of shortreps to be handled by the 
-# external program tpexternal
-
-TRANSVERSALPROPERTIES_tpexternal_exe:="/home/lsoicher/bin/tpexternal";
-# the external program's executable file
-
-TRANSVERSALPROPERTIES_tmpdir:=DirectoryTemporary();
-# for files to communicate with tpexternal
-
-TRANSVERSALPROPERTIES_testmode:=false;
-# Normally should be set to false, but if set to true then certain 
-# theoretical shortcuts are *not* used, in order to further test 
-# the main code.
-
+# To use these functions, first compile the program `tpexternal.c'
+# (if you want to make use of this external program which can greatly
+# speed up the computation of the k-ut and k-et properties).
+#
+# Then set the default info level here to 0, 1, 2 or 3 as desired,
+# to determine how much extra information will be printed out.
+#
 DeclareInfoClass("TRANSVERSALPROPERTIES_info");
 SetInfoLevel(TRANSVERSALPROPERTIES_info,2);
+
+TRANSVERSALPROPERTIES_tpexternal_maxnum:=1;
+# Set this global variable to 0 if you do *not* want to make use of
+# the external C program `tpexternal.c'.
+# 
+# If you *do* want to make use of the external program
+# (which can greatly speed up the computation of k-ut and k-et),
+# then this global variable should be set to the maximum number
+# of "shortreps" to be handled by the external program for each "rep"
+# when computing k-ut or k-et. Usually, the value 1 is best.
+
+TRANSVERSALPROPERTIES_tpexternal_exe:="/home/lsoicher/bin/tpexternal";
+# If you are using the external program `tpexternal.c', then you should
+# set this variable to the program's executable file.
+
+# Then in a GAP session, use the `Read' command to read in this 
+# file `transversalproperties.g', and you should be ready to go!
+
+# Normally, the global variables below should not be changed.
+
+TRANSVERSALPROPERTIES_tmpdir:=DirectoryTemporary();
+# This is for files to communicate with the external program's
+# executable file. 
+
+TRANSVERSALPROPERTIES_testmode:=false;
+# Normally this global variable should be set to `false',
+# but if set to `true' then certain theoretical shortcuts are *not* 
+# taken, in order to further test the main code.
 
 LoadPackage("grape");
 
