@@ -229,7 +229,7 @@ n:=LargestMovedPoint(G);
 if k<2 or k>n then
    Error("must have 2 <= <k> <= LargestMovedPoint(<G>)");
 fi;
-return transversalproperty(A,Number(A,a->a<k),R,newpoint);
+return transversalproperty(A,Number(A,a->a<k),ShallowCopy(R),newpoint);
 end;
 
 tpmain:=function(G,rep,shortreps) 
@@ -265,6 +265,7 @@ else
 fi;
 orbgraph:=OrbGraph(G,rep);
 if tpexternal_num>0 then
+   # We make use of the external C program.
    in_file:=Filename(TRANSVERSALPROPERTIES_tmpdir,"in_file");
    out_file:=Filename(TRANSVERSALPROPERTIES_tmpdir,"out_file");
    RemoveFile(in_file);  # in case there is a leftover copy
@@ -318,7 +319,8 @@ if tpexternal_num>0 then
       return true;
    fi;
 fi;
-# More work is required.
+# Here, we are finished with the external C program, 
+# but more work is required.
 done:=Set(shortreps{[1..tpexternal_num]});
 for i in [tpexternal_num+1..Length(shortreps)] do 
    A:=ListWithIdenticalEntries(n,k);
@@ -638,25 +640,17 @@ if R<>[] then
 fi;
 # Here, we must have  R=[]  and  S<>[]. 
 s:=Remove(S);
-r:=s[1];
-for i in [1..k-1] do
-   A[r]:=i;
-   # Try to build a counterexample with  r  in the  i-th  part.
-   tp:=strongtransversalproperty(A,asum+1);
-   if tp<>true then
-      return tp;
-   fi;
-   A[r]:=k;
-od;
-r:=s[2];
-for i in [1..k-1] do
-   A[r]:=i;
-   # Try to build a counterexample with  r  in the  i-th  part.
-   tp:=strongtransversalproperty(A,asum+1); 
-   if tp<>true then
-      return tp;
-   fi;
-   A[r]:=k;
+for r in s do
+   for i in [1..k-1] do
+      A[r]:=i;
+      # Try to build a counterexample with  r  in the  i-th  part.
+      tp:=strongtransversalproperty(A,asum+1);
+      if tp<>true then
+         #  tp  is a counterexample.
+         return tp;
+      fi;
+      A[r]:=k;
+   od;
 od;
 return true;
 end;
