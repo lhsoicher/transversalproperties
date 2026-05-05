@@ -213,11 +213,11 @@ for i in [1..k-1] do
    # Try to build a counterexample with  r  in the  i-th part.
    A[r]:=i;
    tp:=transversalproperty(A,asum+1,ShallowCopy(R),r);
+   A[r]:=k; # reset the value of A
    if tp<>true then
       # tp  is a counterexample.
       return tp;
    fi;
-   A[r]:=k;
 od;
 return true;
 end;
@@ -630,11 +630,11 @@ if R<>[] then
       # Try to build a counterexample with  r  in the  i-th  part.
       A[r]:=i;
       tp:=strongtransversalproperty(A,asum+1);
+      A[r]:=k;  # reset the value of A
       if tp<>true then
          #  tp  is a counterexample.
          return tp;
       fi;
-      A[r]:=k;
    od;
    return true;
 fi;
@@ -645,11 +645,11 @@ for r in s do
       A[r]:=i;
       # Try to build a counterexample with  r  in the  i-th  part.
       tp:=strongtransversalproperty(A,asum+1);
+      A[r]:=k;  # reset the value of A
       if tp<>true then
          #  tp  is a counterexample.
          return tp;
       fi;
-      A[r]:=k;
    od;
 od;
 return true;
