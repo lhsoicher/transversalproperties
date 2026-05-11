@@ -244,13 +244,13 @@ for(i=1;i<=k-1;i++)
    {
    A[r]=i;
    tp=TransversalProperty(n,k,cosetreps,adj,comb,A,Rnew,r);
+   A[r]=k;  /* to restore A */
    if(!tp)
       {
       free(covered);
       free(Rnew);
       return false;
       }
-   A[r]=k;
    }
 free(covered);
 free(Rnew);
