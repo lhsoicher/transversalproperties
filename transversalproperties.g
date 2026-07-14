@@ -1,5 +1,5 @@
 #
-# Leonard Soicher, 10 April 2026.
+# Leonard Soicher, 14 July 2026.
 #
 # This file contains functions to determine the properties k-et, k-ut,
 # and strong k-ut of given (finite degree) permutation groups.
@@ -805,3 +805,60 @@ for rep in reps do
 od;
 return true;
 end;
+
+OrbitHoughtonGraph := function(G,P,A)
+#
+# returns the orbit Houghton graph w.r.t. the permutation 
+# group  G  on [1..n], the k-partition  P  of  [1..n], and the 
+# (non-empty) k-subset  A  of [1..n].
+#
+# The degree  n  of  G  is taken to be its largest moved point,
+# unless  G  is trivial, in which case  n  is taken to be 1. 
+# If  P  is given as an ordered partition, then  P  is taken to be  Set(P).
+#
+local act,rel,n,partitionorb,setorb;
+
+act:=function(x,g)
+if IsInt(x[1]) then
+   # x is a (non-empty) set of points
+   return OnSets(x,g);
+else
+   # x is a partition
+   return OnSetsDisjointSets(x,g);
+fi;
+end;
+
+rel:=function(x,y)
+#
+# This boolean function returns `true' iff  x  is a k-subset 
+# and  y  is a k-partition with  x  a transversal of  y,  
+# or  y  is a k-subset and  x  is a  k-partition with  y  
+# a transversal of  x.
+# 
+if IsInt(x[1]) and (not IsInt(y[1])) then
+   return ForAll(y,part->Size(Intersection(x,part))=1);
+elif IsInt(y[1]) and (not IsInt(x[1])) then
+   return ForAll(x,part->Size(Intersection(y,part))=1);
+else
+   return false;
+fi;
+end;
+
+if not (IsPermGroup(G) and IsList(P) and IsSet(A)) then
+   Error("usage: OrbitHoughtonGraph( <PermGroup>, <List>, <Set> )");
+fi;
+n:=LargestMovedPoint(G);
+if n=0 then
+  n:=1;
+fi;
+if not (A<>[] and Length(A)=Length(P) and IsSubset([1..n],A) 
+         and Union(P)=[1..n] and ForAll(P,x->IsSet(x) and x<>[]) 
+         and Sum(List(P,Length))=n) then
+   Error("P must be a k-partition and A must be a nonempty k-subset of [1..n]");
+fi;
+P:=Set(P);
+partitionorb:=Set(Orbit(G,P,OnSetsDisjointSets));
+setorb:=Set(Orbit(G,A,OnSets));
+return Graph(G,Concatenation(partitionorb,setorb),act,rel,true);
+end;
+
