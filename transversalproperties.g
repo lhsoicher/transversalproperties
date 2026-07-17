@@ -1,5 +1,5 @@
 #
-# Leonard Soicher, 14 July 2026.
+# Leonard Soicher, 17 July 2026.
 #
 # This file contains functions to determine the properties k-et, k-ut,
 # and strong k-ut of given (finite degree) permutation groups.
@@ -862,3 +862,62 @@ setorb:=Set(Orbit(G,A,OnSets));
 return Graph(G,Concatenation(partitionorb,setorb),act,rel,true);
 end;
 
+OrderedLiftOfHoughtonGraph := function(G,P,A)
+#
+# returns the "tuplized" orbit Houghton graph w.r.t. the permutation 
+# group  G  on [1..n],  the k-partition  P  of  [1..n],  and the 
+# (non-empty) k-subset  A  of [1..n].
+#
+# The degree  n  of  G  is taken to be its largest moved point,
+# unless  G  is trivial, in which case  n  is taken to be 1. 
+# If  P  is given as an ordered partition, then  P  is taken to be  Set(P).
+#
+local act,rel,n,partitionorb,setorb,tuplizedpartitionorb,tuplizedsetorb;
+
+act:=function(x,g)
+if IsInt(x[1]) then
+   # x is a (non-empty) k-tuple of points
+   return OnTuples(x,g);
+else
+   # x is an ordered k-partition
+   return OnTuplesSets(x,g);
+fi;
+end;
+
+rel:=function(x,y)
+#
+# This boolean function returns `true' iff  x  is a k-tuple (of points)
+# and  y  is an ordered  k-partition with  x[i] in y[i]  for i=1,...,k,
+# or  y  is a k-tuple (of points) and  x  is an ordered k-partition with
+# y[i] in x[i]  for i=1,...,k.
+# 
+if IsInt(x[1]) and (not IsInt(y[1])) then
+   return ForAll([1..Length(x)],i->x[i] in y[i]);
+elif IsInt(y[1]) and (not IsInt(x[1])) then
+   return ForAll([1..Length(y)],i->y[i] in x[i]);
+else
+   return false;
+fi;
+end;
+
+if not (IsPermGroup(G) and IsList(P) and IsSet(A)) then
+   Error("usage: OrderedLiftOfHoughtonGraph( <PermGroup>, <List>, <Set> )");
+fi;
+n:=LargestMovedPoint(G);
+if n=0 then
+  n:=1;
+fi;
+if not (A<>[] and Length(A)=Length(P) and IsSubset([1..n],A) 
+         and Union(P)=[1..n] and ForAll(P,x->IsSet(x) and x<>[]) 
+         and Sum(List(P,Length))=n) then
+   Error("P must be a k-partition and A must be a nonempty k-subset of [1..n]");
+fi;
+P:=Set(P);
+partitionorb:=Set(Orbit(G,P,OnSetsDisjointSets));
+tuplizedpartitionorb:=Union(List(partitionorb,PermutationsList));
+setorb:=Set(Orbit(G,A,OnSets));
+tuplizedsetorb:=Union(List(setorb,PermutationsList));
+return Graph(G,Concatenation(tuplizedpartitionorb,tuplizedsetorb),act,rel,true);
+end;
+
+TuplizedOrbitHoughtonGraph := OrderedLiftOfHoughtonGraph;
