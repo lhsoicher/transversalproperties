@@ -1,8 +1,8 @@
 #
-# Leonard Soicher, 17 July 2026.
+# Leonard Soicher, 30 July 2026.
 #
 # This file contains functions to determine the properties k-et, k-ut,
-# and strong k-ut of given (finite degree) permutation groups.
+# strong k-ut, and k-id of given (finite degree) permutation groups.
 #
 # To use these functions, first compile the program `tpexternal.c'
 # (if you want to make use of this external program which can greatly
@@ -921,3 +921,69 @@ return Graph(G,Concatenation(tuplizedpartitionorb,tuplizedsetorb),act,rel,true);
 end;
 
 TuplizedOrbitHoughtonGraph := OrderedLiftOfHoughtonGraph;
+
+IdempotentGenerationProperty := function(G,k)
+#
+# Suppose  G  is a permutation group on  [1..n],
+# where  n:=LargestMovedPoint(G),  and  k  is an 
+# integer with  1 < k < n.
+# 
+# Then this function returns `true' if  G  satisfies
+# the  k-id  property, and `false' if not.
+#
+local n,setreps,partitionreps,set,partition;
+if not (IsPermGroup(G) and IsInt(k)) then
+   Error("usage: IdempotentGenerationProperty( <PermGrp>, <Int> )");
+fi;
+n:=LargestMovedPoint(G);
+if k<=1 or k>=n then
+   Error("must have  1 < k < LargestMovedPoint(G)");
+fi;
+if NrMovedPoints(G)=n and (IsNaturalSymmetricGroup(G) or IsNaturalAlternatingGroup(G)) then
+   # G has the k-id property
+   Info(TRANSVERSALPROPERTIES_info,1,
+      "IdempotentGenerationProperty: k-id holds since G is S_n or A_n");
+   return true;
+fi; 
+if not UniversalTransversalProperty(G,k) then
+   # G does not have the k-ut property and so does not have k-id
+   Info(TRANSVERSALPROPERTIES_info,1,
+      "IdempotentGenerationProperty: k-ut does not hold ",
+      "so k-id does not hold.");
+   return false;
+fi; 
+partitionreps:=Set(
+   OrbitsDomain(G,PartitionsSet([1..n],k),OnSetsDisjointSets),Minimum );
+setreps:=LeastSetRepresentatives(G,k);
+Info(TRANSVERSALPROPERTIES_info,2,
+   "IdempotentGenerationProperty: no. of k-partition orbits = ",
+   Length(partitionreps),", no. of k-set orbits = ",Length(setreps));
+for partition in partitionreps do
+   for set in setreps do
+      if not IsConnectedGraph(OrbitHoughtonGraph(G,partition,set)) then
+         # G does not have the k-id property
+         Info(TRANSVERSALPROPERTIES_info,1,
+            "IdempotentGenerationProperty: k-id does not hold. ",
+            "Orbit Houghton graph not connected for: ",
+            partition,", ",set);
+         return false;
+      fi; 
+   od;
+od;
+Info(TRANSVERSALPROPERTIES_info,2,
+   "IdempotentGenerationProperty: k-RCP holds for all orbit-pairs");
+for partition in partitionreps do
+   for set in setreps do
+      if not IsConnectedGraph(OrderedLiftOfHoughtonGraph(G,partition,set)) then
+         # G does not have the k-id property
+         Info(TRANSVERSALPROPERTIES_info,1,
+            "IdempotentGenerationProperty: k-id does not hold. ",
+            "ordered lift of Houghton graph not connected for: ",
+            partition,", ",set);
+         return false;
+      fi; 
+   od;
+od;
+return true;
+end;
+
