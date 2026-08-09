@@ -6,6 +6,9 @@ by Leonard H. Soicher (https://webspace.maths.qmul.ac.uk/l.h.soicher/).
 Homepage: https://gap-packages.github.io/grape
 Report issues at https://github.com/gap-packages/grape/issues
 ─────────────────────────────────────────────────────────────────────────────
+gap> SetInfoLevel(TRANSVERSALPROPERTIES_info,0);
+gap> TRANSVERSALPROPERTIES_tpexternal_maxnum:=0; # so external C program is not used
+0
 gap> 
 gap> RoutingGraphsCheck := function(G,B,A,S)
 > #
@@ -181,32 +184,40 @@ gap>
 gap> #
 gap> # Now run the required checks for Sz(8) and Sz(32).
 gap> #
-gap> Runtimes();
-rec( system_time := 87, system_time_children := 0, user_time := 1561, 
-  user_time_children := 0 )
 gap> G:=AllPrimitiveGroups(NrMovedPoints,65,Transitivity,2);
 [ PSU(3, 4), PSU(3, 4).2, PGammaU(3, 4), PSz(8), PSz(8).3 ]
 gap> G:=G[4];
 PSz(8)
+gap> Runtime();
+1926
+gap> UniversalTransversalProperty(G,3);
+true
+gap> Runtime();
+1971
 gap> L:=LeastSetRepresentatives(G,3);
 [ [ 1, 2, 3 ], [ 1, 2, 15 ] ]
 gap> List(L,x->Size(Stabilizer(G,x,OnSets)));
 [ 1, 2 ]
-gap> for set in L do
->    check:=RoutingGraphsCheck(G,[[1],[2],[3]],set,[1,2]); 
->    Print("\n",set,"  ",check,"\n");
+gap> for A in L do
+>    check:=RoutingGraphsCheck(G,[[1],[2],[3]],A,[1,2]); 
+>    Print("\n",A,"  ",check,"\n");
 > od;
 
 [ 1, 2, 3 ]  true
 
 [ 1, 2, 15 ]  true
-gap> Runtimes();
-rec( system_time := 89, system_time_children := 0, user_time := 3543, 
-  user_time_children := 0 )
+gap> Runtime();
+3840
 gap> G:=AllPrimitiveGroups(NrMovedPoints,1025,Transitivity,2);
 [ Sz(32), Sz(32):5 ]
 gap> G:=G[1];
 Sz(32)
+gap> Runtime();
+3880
+gap> UniversalTransversalProperty(G,3);
+true
+gap> Runtime();
+82949
 gap> L:=LeastSetRepresentatives(G,3);
 [ [ 1, 2, 3 ], [ 1, 2, 4 ], [ 1, 2, 5 ], [ 1, 2, 9 ], [ 1, 2, 10 ], 
   [ 1, 2, 11 ] ]
@@ -214,9 +225,9 @@ gap> List(L,x->Size(Stabilizer(G,x,OnSets)));
 [ 1, 1, 1, 1, 1, 2 ]
 gap> L:=Filtered(L,x->Size(Stabilizer(G,x,OnSets))=1);
 [ [ 1, 2, 3 ], [ 1, 2, 4 ], [ 1, 2, 5 ], [ 1, 2, 9 ], [ 1, 2, 10 ] ]
-gap> for set in L do
->   check:=RoutingGraphsCheck(G,[[1],[2],[3]],set,[1,2]); 
->   Print("\n",set,"  ",check,"\n");
+gap> for A in L do
+>   check:=RoutingGraphsCheck(G,[[1],[2],[3]],A,[1,2]); 
+>   Print("\n",A,"  ",check,"\n");
 > od;
 
 [ 1, 2, 3 ]  true
@@ -229,7 +240,6 @@ gap> for set in L do
 
 [ 1, 2, 10 ]  true
 gap> Runtimes();  # total run-times in milliseconds
-rec( system_time := 960, system_time_children := 0, user_time := 4244346, 
+rec( system_time := 963, system_time_children := 0, user_time := 4243845, 
   user_time_children := 0 )
-gap> 
-gap> 
+gap> quit;
