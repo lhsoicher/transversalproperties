@@ -95,6 +95,36 @@ fi;
 return Set(CompleteSubgraphs(CompleteGraph(G),k,2),x->SmallestImageSet(G,x));
 end;
 
+IsSetTransitive := function(G,k)
+#
+# Suppose  G  is a permutation group on  [1..n],
+# where  n:=LargestMovedPoint(G),  and  k  is a 
+# non-negative integer <= n.
+# 
+# Then this boolean function returns  true  if  G  is transitive
+# in its natural action on the k-subsets of [1..n], 
+# and  false  if not.
+#
+local n;
+if not (IsPermGroup(G) and IsInt(k)) then
+   Error("usage: IsSetTransitive( <PermGrp>, <Int> )");
+fi;
+n:=LargestMovedPoint(G);
+if k<0 or k>n then
+   Error("must have  0 <= <k> <= LargestMovedPoint(<G>)");
+fi;
+if k=0 or k=n then
+   return true;
+fi;
+if k>n/2 then
+   k:=n-k;
+fi;
+if Transitivity(G,[1..n])>=k then
+   return true;
+fi;
+return Length(CompleteSubgraphs(CompleteGraph(G),k,2))=1;
+end;
+
 OrbGraph := function(G,rep)
 #
 # Suppose  G  is a permutation group on  [1..n],
