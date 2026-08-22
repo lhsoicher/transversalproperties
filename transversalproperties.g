@@ -1,5 +1,5 @@
 #
-# Leonard Soicher, 30 July 2026.
+# Leonard Soicher, 22 August 2026.
 #
 # This file contains functions to determine the properties k-et, k-ut,
 # strong k-ut, and k-id of given (finite degree) permutation groups.
@@ -1017,3 +1017,172 @@ od;
 return true;
 end;
 
+RoutingGraphsCheck := function(G,B,A,S)
+#
+# Let  G  be a 2-transitive permutation group on [1..n], 
+# let  B  be a length 3 list of pairwise disjoint non-empty
+# subsets of [1..n], let  A  be a 3-subset of [1..n], and 
+# let the "fixed pair"  S  be a 2-subset of [1..n].
+#
+# This function returns `true' if the fix-paired routing graph
+# w.r.t.  G, P, A, and S is connected for *every* ordered 3-partition
+# P  of [1..n] such that  B[i]  is contained in  P[i]  for  i=1,2,3.
+#
+# Otherwise this function returns an ordered 3-partition  Q  of [1..n],
+# such that  B[i]  is contained in  Q[i]  for  i=1,2,3
+# and the routing graph w.r.t. G, Q, A, and S  is *not* connected.
+#
+# Where i in [1..n-1]  and  j in [i+1..n],  reps[i][j]  is calculated to
+# be an element of  G  mapping  i to S[1]  and  j to S[2].
+#
+local RoutingNullSubgraph,RoutingSubgraph,routinggraphscheck,n,gamma,reps,i,j;
+
+RoutingNullSubgraph := function(G,A,S)
+#
+# Returns the spanning null subgraph of a fixed-pair routing graph
+# w.r.t. the 2-transitive permutation group  G  on [1..n], the
+# 3-subset  A  of [1..n], and the "fixed pair"  S,  a 2-subset
+# of [1..n].
+#
+# The vertex-names of the returned graph is the subset of [1..n]
+# consisting of those  i  with the property that  S union {i}
+# is a 3-subset in the  G-orbit  of  A. 
+#
+# The `group' component of the returned graph is the image of 
+# the (setwise) stabilizer in  G  of  S,  in its action on the 
+# vertex-names  (or more precisely, the vertices of the returned 
+# graph to which the vertex-names correspond).
+#
+local n,uorbgraph,N,K,t;
+n:=LargestMovedPoint(G);
+uorbgraph:=UnderlyingGraph(OrbGraph(G,A));
+t:=First([n+1..uorbgraph.order],x->(uorbgraph.names)[x]=S);
+N:=Adjacency(uorbgraph,t);
+K:=Stabilizer(G,S,OnSets);
+return Graph(K,N,OnPoints,{x,y}->false,true);
+end;
+
+RoutingSubgraph := function(G,B,gamma,S,reps)
+#
+# Let  G  be a 2-transitive permutation group on [1..n], and let  B  be
+# a length 3 list of pairwise disjoint nonempty subsets of [1..n].
+#
+# This function returns the fixed-pair routing subgraph  delta
+# w.r.t  G,  B,  the given spanning subgraph  gamma  of  delta,  
+# and the "fixed pair"  S,  which is a 2-subset of  [1..n].
+# 
+# The given graph  gamma  must be a spanning subgraph of the required 
+# routing subgraph  delta.  The vertex-names and group associated with 
+# the returned graph  delta  are those of  gamma.  The group is the 
+# image of set-wise stabilizer in  G  of  S,  in its action on the 
+# vertex-names.
+#
+# Where  i in [1..n-1]  and  j in [i+1..n],  reps[i][j]  is a given 
+# element of  G  mapping  i to S[1]  and  j to S[2].
+#
+# The returned fixed-pair routing subgraph  delta  is defined as follows. 
+# The vertices (actually the vertex names) are those of  gamma, 
+# and consist of the elements  i  in  [1..n]  such that  S union {i}
+# is in the G-orbit of some given 3-subset  A  of [1..n].
+# Two distinct vertices  z,w  are joined by an edge in  delta  
+# iff  there is a  C  in the  G-orbit of  B  (where the action is
+# on sets of sets),  such that  S[1]  and  S[2]   are in different 
+# elements of  C,  and  z  and  w  are both in the unique third 
+# element of  C  containing neither  S[1]  nor  S[2].
+#
+local names,i,pair,x,y,g,D,edge,c,d,delta;
+delta:=StructuralCopy(gamma);
+names:=delta.names;
+for i in [1..3] do 
+   if Size(B[i])>1 then
+      pair:=Difference([1..3],[i]);
+      for x in B[pair[1]] do
+         for y in B[pair[2]] do
+            if x<y then
+               g:=reps[x][y];
+            else
+               g:=reps[y][x];
+            fi;
+            D:=Intersection(names,OnSets(B[i],g));
+            for edge in Combinations(D,2) do
+               c:=PositionSorted(names,edge[1]);
+               d:=PositionSorted(names,edge[2]);
+               AddEdgeOrbit(delta,[c,d]);
+               AddEdgeOrbit(delta,[d,c]);
+            od;
+         od;
+      od;
+   fi;
+od;
+return delta;
+end;
+
+routinggraphscheck := function(G,B,gamma,S,reps)
+#
+# This recursive function does all the real work of RoutingGraphsCheck.
+#
+# Let  G  be a 2-transitive permutation group on [1..n], and let  B  be
+# a length 3 list of pairwise disjoint nonempty subsets of [1..n].
+#
+# The graph  gamma  must be a routing subgraph w.r.t.  G,  B,
+# some 3-subset of [1..n], and the "fixed pair"  S,  a given 
+# 2-subset of  [1..n].
+#
+# This function returns `true' if the fixed-pair routing subgraph
+# w.r.t. G, P, gamma, and S is connected, for *every* 3-partition
+# P  of [1..n] such that  B[i]  is contained in  P[i]  for  i=1,2,3.
+#
+# Otherwise this function returns an ordered 3-partition  Q  of  [1..n], 
+# such that  B[i]  is contained in  Q[i]  for  i=1,2,3
+# and the routing graph w.r.t. G, Q, gamma, and S  is *not* connected.
+#
+# Where i in [1..n-1]  and  j in [i+1..n],  reps[i][j]  is a given
+# element of  G  mapping  i to S[1]  and  j to S[2].
+#
+local names,r,i,check,remaining;
+if IsConnectedGraph(gamma) then
+   return true;
+fi;
+remaining:=Difference([1..LargestMovedPoint(G)],Union(B));
+if remaining=[] then
+   # B is an (ordered) partition of [1..n] and its routing graph
+   # gamma  is not connected.
+   return StructuralCopy(B);
+fi;
+names:=gamma.names;
+r:=Remove(remaining);
+for i in [3,2,1] do
+   AddSet(B[i],r);
+   check:=routinggraphscheck(G,B,RoutingSubgraph(G,B,gamma,S,reps),S,reps);
+   RemoveSet(B[i],r);
+   if check<>true then
+      return check;
+   fi;
+od;
+return true;
+end;
+
+if not (IsPermGroup(G) and IsList(B) and IsSet(A) and IsSet(S)) then
+   Error("usage: RoutingGraphsCheck( <PermGroup>, <List>, <Set>, <Set> )");
+fi;
+n:=LargestMovedPoint(G);
+if n<4 then
+   Error("must have LargestMovedPoint(<G>)>=4");
+elif not (Length(B)=3 and Length(A)=3 and Length(S)=2 
+   and ForAll(B,x->IsSubset([1..n],x) and Length(x)>0) 
+   and Sum(List(B,Length))=Length(Union(B))
+   and IsSubset([1..n],A) and IsSubset([1..n],S)
+   and Transitivity(G,[1..n])>1) then
+   Error("one or more bad input parameter(s)");
+fi;
+reps:=[];
+for i in [1..n-1] do
+   reps[i]:=[];
+   for j in [i+1..n] do
+      reps[i][j]:=RepresentativeAction(G,[i,j],S,OnTuples);
+   od;
+od;
+B:=StructuralCopy(B);
+gamma:=RoutingSubgraph(G,B,RoutingNullSubgraph(G,A,S),S,reps);
+return routinggraphscheck(G,B,gamma,S,reps);
+end;
