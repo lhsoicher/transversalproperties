@@ -1,5 +1,5 @@
 #
-# Leonard Soicher, 18 September 2026.
+# Leonard Soicher, 20 September 2026.
 #
 # This file contains functions to determine the properties k-et, k-ut,
 # strong k-ut, and k-id of given (finite degree) permutation groups.
@@ -1171,7 +1171,7 @@ if k=3 and Transitivity(G)>=2 then
          return false;
       fi; 
    od;
-   if ForAll(setreps,A->RoutingGraphsCheck(G,[[1],[2],[3]],A,[1,2])) then
+   if ForAll(setreps,A->RoutingGraphsCheck(G,[[1],[2],[3]],A,[1,2])=true) then
       Info(TRANSVERSALPROPERTIES_info,1,
          "IdempotentGeneratedProperty: 3-id holds since G is 2-transitive, ",
          "and for all 3-set orbit representatives: ",
