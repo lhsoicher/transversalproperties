@@ -1170,7 +1170,7 @@ if k=3 and Transitivity(G)>=2 then
          Info(TRANSVERSALPROPERTIES_info,1,
             "IdempotentGeneratedProperty: k-id does not hold. ",
             "Ordered lift of Houghton graph is not connected for ",
-            "[[1],[2]],[3..n]], ",set);
+            "[[1],[2],[3..n]], ",set);
          return false;
       fi; 
    od;
