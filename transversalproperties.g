@@ -1,5 +1,5 @@
 #
-# Leonard Soicher, 20 September 2026.
+# Leonard Soicher, 24 September 2026.
 #
 # This file contains functions to determine the properties k-et, k-ut,
 # strong k-ut, and k-id of given (finite degree) permutation groups.
@@ -1143,7 +1143,10 @@ if k<=1 or k>=n then
    Error("must have  1 < k < LargestMovedPoint(G)");
 fi;
 if NrMovedPoints(G)=n and (IsNaturalSymmetricGroup(G) or IsNaturalAlternatingGroup(G)) then
-   # G has the k-id property
+   # G has the k-id property, by Theorem 1.1 of J. Araujo, J.D. Mitchell,
+   # and C. Schneider, Groups that together with any transformation generate
+   # regular semigroups or idempotent generated semigroups, J. Algebra 343
+   # (2011), 93-106.
    Info(TRANSVERSALPROPERTIES_info,1,
       "IdempotentGeneratedProperty: k-id holds since G is S_n or A_n");
    return true;
@@ -1152,7 +1155,7 @@ if not UniversalTransversalProperty(G,k) then
    # G does not have the k-ut property and so does not have k-id
    Info(TRANSVERSALPROPERTIES_info,1,
       "IdempotentGeneratedProperty: k-ut does not hold ",
-      "so k-id does not hold.");
+      "so k-id does not hold");
    return false;
 fi; 
 setreps:=LeastSetRepresentatives(G,k);
@@ -1175,8 +1178,8 @@ if k=3 and Transitivity(G)>=2 then
       Info(TRANSVERSALPROPERTIES_info,1,
          "IdempotentGeneratedProperty: 3-id holds since G is 2-transitive, ",
          "and for all 3-set orbit representatives: ",
-         "the ordered lift of Houghton graph is connected w.r.t. ",
-         "[[1],[2]],[3..n]], and the routing graphs checks hold.");
+         "the ordered lift of the Houghton graph is connected w.r.t. ",
+         "[[1],[2],[3..n]], and the routing graphs checks hold");
       return true;
    fi;
 fi;
@@ -1208,12 +1211,16 @@ for partition in partitionreps do
          # G does not have the k-id property
          Info(TRANSVERSALPROPERTIES_info,1,
             "IdempotentGeneratedProperty: k-id does not hold. ",
-            "ordered lift of Houghton graph not connected for: ",
+            "ordered lift of Houghton graph is not connected for: ",
             partition,", ",set);
          return false;
       fi; 
    od;
 od;
+Info(TRANSVERSALPROPERTIES_info,1,
+   "IdempotentGeneratedProperty: k-id holds since the ",
+   "ordered lifts of the Houghton graphs are connected for ",
+   "all orbit-pairs");
 return true;
 end;
 
