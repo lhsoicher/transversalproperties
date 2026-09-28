@@ -1,5 +1,5 @@
 #
-# Leonard Soicher, 24 September 2026.
+# Leonard Soicher, 28 September 2026.
 #
 # This file contains functions to determine the properties k-et, k-ut,
 # strong k-ut, and k-id of given (finite degree) permutation groups.
@@ -954,7 +954,8 @@ TuplizedOrbitHoughtonGraph := OrderedLiftOfHoughtonGraph;
 
 RoutingGraphsCheck := function(G,B,A,S)
 #
-# Let  G  be a 2-transitive permutation group on [1..n], 
+# Let  G  be a 2-homogeneous permutation group
+# on [1..n], where  n:=LargestMovedPoint(G), 
 # let  B  be a length 3 list of pairwise disjoint non-empty
 # subsets of [1..n], let  A  be a 3-subset of [1..n], and 
 # let the "fixed pair"  S  be a 2-subset of [1..n].
@@ -968,14 +969,14 @@ RoutingGraphsCheck := function(G,B,A,S)
 # and the routing graph w.r.t. G, Q, A, and S  is *not* connected.
 #
 # Where i in [1..n-1]  and  j in [i+1..n],  reps[i][j]  is calculated to
-# be an element of  G  mapping  i to S[1]  and  j to S[2].
+# be an element of  G  mapping  {i,j} to S.
 #
 local RoutingNullSubgraph,RoutingSubgraph,routinggraphscheck,n,gamma,reps,i,j;
 
 RoutingNullSubgraph := function(G,A,S)
 #
 # Returns the spanning null subgraph of a fixed-pair routing graph
-# w.r.t. the 2-transitive permutation group  G  on [1..n], the
+# w.r.t. the 2-homogeneous permutation group  G  on [1..n], the
 # 3-subset  A  of [1..n], and the "fixed pair"  S,  a 2-subset
 # of [1..n].
 #
@@ -999,7 +1000,7 @@ end;
 
 RoutingSubgraph := function(G,B,gamma,S,reps)
 #
-# Let  G  be a 2-transitive permutation group on [1..n], and let  B  be
+# Let  G  be a 2-homogeneous permutation group on [1..n], and let  B  be
 # a length 3 list of pairwise disjoint nonempty subsets of [1..n].
 #
 # This function returns the fixed-pair routing subgraph  delta
@@ -1013,7 +1014,7 @@ RoutingSubgraph := function(G,B,gamma,S,reps)
 # vertex-names.
 #
 # Where  i in [1..n-1]  and  j in [i+1..n],  reps[i][j]  is a given 
-# element of  G  mapping  i to S[1]  and  j to S[2].
+# element of  G  mapping  {i,j} to S.
 #
 # The returned fixed-pair routing subgraph  delta  is defined as follows. 
 # The vertices (actually the vertex names) are those of  gamma, 
@@ -1056,7 +1057,7 @@ routinggraphscheck := function(G,B,gamma,S,reps)
 #
 # This recursive function does all the real work of RoutingGraphsCheck.
 #
-# Let  G  be a 2-transitive permutation group on [1..n], and let  B  be
+# Let  G  be a 2-homogeneous permutation group on [1..n], and let  B  be
 # a length 3 list of pairwise disjoint nonempty subsets of [1..n].
 #
 # The graph  gamma  must be a routing subgraph w.r.t.  G,  B,
@@ -1071,8 +1072,8 @@ routinggraphscheck := function(G,B,gamma,S,reps)
 # such that  B[i]  is contained in  Q[i]  for  i=1,2,3
 # and the routing graph w.r.t. G, Q, gamma, and S  is *not* connected.
 #
-# Where i in [1..n-1]  and  j in [i+1..n],  reps[i][j]  is a given
-# element of  G  mapping  i to S[1]  and  j to S[2].
+# Where  i in [1..n-1]  and  j in [i+1..n],  reps[i][j]  is a given
+# element of  G  mapping  {i,j} to S.
 #
 local names,r,i,check,remaining;
 if IsConnectedGraph(gamma) then
@@ -1107,7 +1108,7 @@ elif not (Length(B)=3 and Length(A)=3 and Length(S)=2
    and ForAll(B,x->IsSubset([1..n],x) and Length(x)>0) 
    and Sum(List(B,Length))=Length(Union(B))
    and IsSubset([1..n],A) and IsSubset([1..n],S)
-   and Transitivity(G,[1..n])>1) then
+   and IsSetTransitive(G,2)) then
    Error("one or more bad input parameter(s)");
 fi;
 reps:=[];
@@ -1115,6 +1116,9 @@ for i in [1..n-1] do
    reps[i]:=[];
    for j in [i+1..n] do
       reps[i][j]:=RepresentativeAction(G,[i,j],S,OnTuples);
+      if reps[i][j]=fail then
+         reps[i][j]:=RepresentativeAction(G,[j,i],S,OnTuples);
+      fi;
    od;
 od;
 B:=StructuralCopy(B);
@@ -1159,7 +1163,7 @@ if not UniversalTransversalProperty(G,k) then
    return false;
 fi; 
 setreps:=LeastSetRepresentatives(G,k);
-if k=3 and Transitivity(G)>=2 then
+if k=3 and IsSetTransitive(G,2) then
    #
    # Try the fixed-pair routing graphs approach.
    #
@@ -1176,10 +1180,11 @@ if k=3 and Transitivity(G)>=2 then
    od;
    if ForAll(setreps,A->RoutingGraphsCheck(G,[[1],[2],[3]],A,[1,2])=true) then
       Info(TRANSVERSALPROPERTIES_info,1,
-         "IdempotentGeneratedProperty: 3-id holds since G is 2-transitive, ",
-         "and for all 3-set orbit representatives: ",
+         "IdempotentGeneratedProperty: 3-id holds since G is 2-homogeneous, ",
+         "G satisfies 3-ut, and for all 3-set orbit representatives: ",
          "the ordered lift of the Houghton graph is connected w.r.t. ",
-         "[[1],[2],[3..n]], and the routing graphs checks hold");
+         "[[1],[2],[3..n]], and the routing graphs checks hold for the ",
+         " fixed-pair [1,2]");
       return true;
    fi;
 fi;
