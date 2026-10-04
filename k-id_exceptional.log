@@ -1,0 +1,179 @@
+gap> Read("/data/home/ahw117/transversalproperties/transversalproperties.g");
+─────────────────────────────────────────────────────────────────────────────
+Loading GRAPE 4.9.3 (GRaph Algorithms using PErmutation groups)
+by Leonard H. Soicher (https://webspace.maths.qmul.ac.uk/l.h.soicher/).
+Homepage: https://gap-packages.github.io/grape
+Report issues at https://github.com/gap-packages/grape/issues
+─────────────────────────────────────────────────────────────────────────────
+gap> TRANSVERSALPROPERTIES_tpexternal_exe:="/data/home/ahw117/bin/tpexternal";
+"/data/home/ahw117/bin/tpexternal"
+gap> #
+gap> # PSL(2,11) on 11 points satisfies 3-id:
+gap> #
+gap> P:=AllPrimitiveGroups(NrMovedPoints,11,Size,660);
+[ L(2, 11) ]
+gap> G:=P[1];
+L(2, 11)
+gap> IdempotentGeneratedProperty(G,3);
+#I  UniversalTransversalProperty: Length(shortreps)=1 Length(reps)=2
+#I  UniversalTransversalProperty: stabsizes of reps=[ [ 6, 1 ], [ 12, 1 ] ]
+#I  UniversalTransversalProperty: stabsizes of shortreps=[ [ 12, 1 ] ]
+#I  UniversalTransversalProperty: testing orbit of: [ 1, 2, 4 ]
+#I  UniversalTransversalProperty: testing orbit of: [ 1, 2, 3 ]
+#I  IdempotentGeneratedProperty: no. of k-partition orbits = 77, no. of k-set orbits = 2
+#I  IdempotentGeneratedProperty: k-RCP holds for all orbit-pairs
+#I  IdempotentGeneratedProperty: k-id holds since the ordered lifts of the Houghton graphs are connected for all orbit-pairs
+true
+gap> #
+gap> # 2^4.A6 and 2^4.A_7 on 16 points satisfy 3-id:
+gap> #
+gap> P:=AllPrimitiveGroups(NrMovedPoints,16,Size,2^4*360,IsPerfectGroup,true);
+[ 2^4.A(6) ]
+gap> G:=P[1];
+2^4.A(6)
+gap> IdempotentGeneratedProperty(G,3);
+#I  UniversalTransversalProperty: Length(shortreps)=1 Length(reps)=2
+#I  UniversalTransversalProperty: stabsizes of reps=[ [ 18, 1 ], [ 24, 1 ] ]
+#I  UniversalTransversalProperty: stabsizes of shortreps=[ [ 48, 1 ] ]
+#I  UniversalTransversalProperty: testing orbit of: [ 1, 2, 7 ]
+#I  UniversalTransversalProperty: testing orbit of: [ 1, 2, 3 ]
+#I  IdempotentGeneratedProperty: 3-id holds since G is 2-homogeneous, G satisfies 3-ut, and for all 3-set orbit representatives: the ordered lift of the Houghton graph is connected w.r.t. [[1],[2],[3..n]], and the routing graphs checks hold for the  fixed-pair [1,2]
+true
+gap> P:=AllPrimitiveGroups(NrMovedPoints,16,Size,2^4*360*7);
+[ 2^4.A(7) ]
+gap> H:=P[1];
+2^4.A(7)
+gap> # Now show that some conjugate of H contains G.
+gap> P:=AllPrimitiveGroups(NrMovedPoints,16,Size,2^4*360*7*8);
+[ 2^4.PSL(4, 2) ]
+gap> K:=P[1];
+2^4.PSL(4, 2)
+gap> IsSubgroup(K,H);
+true
+gap> ForAny(Orbit(K,H),x->IsSubgroup(x,G));
+true
+gap> #
+gap> # 2^6.G_2(2)' and 2^6.G_2(2) on 64 points satisfy 3-id:
+gap> #
+gap> n:=64;
+64
+gap> P:=AllPrimitiveGroups(NrMovedPoints,n,Size,2^6*6048*2);
+[ 2^6:SigmaU(3, 3) ]
+gap> H:=P[1];
+2^6:SigmaU(3, 3)
+gap> G:=DerivedSubgroup(H);;
+gap> Size(H)/Size(G);
+2
+gap> IsPrimitive(G,[1..n]);
+true
+gap> P:=AllPrimitiveGroups(NrMovedPoints,n,Size,2^6*6048);
+[ 2^6:SU(3, 3) ]
+gap> G:=P[1];
+2^6:SU(3, 3)
+gap> IdempotentGeneratedProperty(G,3);
+#I  UniversalTransversalProperty: Length(shortreps)=1 Length(reps)=3
+#I  UniversalTransversalProperty: stabsizes of reps=[ [ 18, 1 ], [ 24, 1 ], [ 96, 1 ] ]
+#I  UniversalTransversalProperty: stabsizes of shortreps=[ [ 192, 1 ] ]
+#I  UniversalTransversalProperty: testing orbit of: [ 1, 2, 29 ]
+#I  UniversalTransversalProperty: testing orbit of: [ 1, 2, 5 ]
+#I  UniversalTransversalProperty: testing orbit of: [ 1, 2, 3 ]
+#I  IdempotentGeneratedProperty: 3-id holds since G is 2-homogeneous, G satisfies 3-ut, and for all 3-set orbit representatives: the ordered lift of the Houghton graph is connected w.r.t. [[1],[2],[3..n]], and the routing graphs checks hold for the  fixed-pair [1,2]
+true
+gap> #
+gap> # Partial result for 3-id for HS on 176 points:
+gap> #
+gap> n:=176;
+176
+gap> P:=AllPrimitiveGroups(NrMovedPoints,n,Size,44352000);
+[ HS ]
+gap> G:=P[1];
+HS
+gap> Transitivity(G);
+2
+gap> UniversalTransversalProperty(G,3);
+#I  UniversalTransversalProperty: Length(shortreps)=1 Length(reps)=3
+#I  UniversalTransversalProperty: stabsizes of reps=[ [ 96, 1 ], [ 120, 1 ], [ 720, 1 ] ]
+#I  UniversalTransversalProperty: stabsizes of shortreps=[ [ 2880, 1 ] ]
+#I  UniversalTransversalProperty: testing orbit of: [ 1, 2, 16 ]
+#I  UniversalTransversalProperty: testing orbit of: [ 1, 2, 3 ]
+#I  UniversalTransversalProperty: testing orbit of: [ 1, 2, 6 ]
+true
+gap> L:=LeastSetRepresentatives(G,3);
+[ [ 1, 2, 3 ], [ 1, 2, 6 ], [ 1, 2, 16 ] ]
+gap> List(L,x->Size(Stabilizer(G,x,OnSets)));
+[ 120, 96, 720 ]
+gap> pi_2:=[[1],[2],[3..n]];;
+gap> for A in L do
+>    Print("\nA = ",A);
+>    gamma:=OrderedLiftOfHoughtonGraph(G,pi_2,A);
+>    Print("  OLHG(pi_2,A) connected = ",IsConnectedGraph(gamma));
+> od;
+
+A = [ 1, 2, 3 ]  OLHG(pi_2,A) connected = true
+A = [ 1, 2, 6 ]  OLHG(pi_2,A) connected = true
+A = [ 1, 2, 16 ]  OLHG(pi_2,A) connected = true
+gap> for A in L do
+>    Print("\nA = ",A);
+>    check:=RoutingGraphsCheck(G,[[1],[2],[3]],A,[1,2]); 
+>    Print("  routing graphs check = ",check);
+> od;
+
+A = [ 1, 2, 3 ]  routing graphs check = true
+A = [ 1, 2, 6 ]  routing graphs check = true
+A = [ 1, 2, 16 ]  routing graphs check = 
+[ [ 1 ], [ 2, 71, 97, 123, 144, 154, 167 ], 
+  [ 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 
+      23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 
+      41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 
+      59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 72, 73, 74, 75, 76, 77, 
+      78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 
+      96, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 
+      112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 124, 125, 126, 
+      127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 
+      141, 142, 143, 145, 146, 147, 148, 149, 150, 151, 152, 153, 155, 156, 
+      157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 168, 169, 170, 171, 
+      172, 173, 174, 175, 176 ] ]
+gap> Runtimes(); # run-times so far in milliseconds.
+rec( system_time := 1504, system_time_children := 11, user_time := 2092680, 
+  user_time_children := 24 )
+gap> #
+gap> # Co_3 on 276 points satisfies 3-id:
+gap> #
+gap> n:=276;
+276
+gap> P:=AllPrimitiveGroups(NrMovedPoints,n,Size,495766656000);
+[ Co_3 ]
+gap> G:=P[1];
+Co_3
+gap> IdempotentGeneratedProperty(G,3);
+#I  UniversalTransversalProperty: Length(shortreps)=1 Length(reps)=2
+#I  UniversalTransversalProperty: stabsizes of reps=[ [ 241920, 1 ], [ 349920, 1 ] ]
+#I  UniversalTransversalProperty: stabsizes of shortreps=[ [ 13063680, 1 ] ]
+#I  UniversalTransversalProperty: testing orbit of: [ 1, 2, 4 ]
+#I  UniversalTransversalProperty: testing orbit of: [ 1, 2, 3 ]
+#I  IdempotentGeneratedProperty: 3-id holds since G is 2-homogeneous, G satisfies 3-ut, and for all 3-set orbit representatives: the ordered lift of the Houghton graph is connected w.r.t. [[1],[2],[3..n]], and the routing graphs checks hold for the  fixed-pair [1,2]
+true
+gap> Runtimes(); # run-times so far in milliseconds.
+rec( system_time := 2935, system_time_children := 19, user_time := 2881190, 
+  user_time_children := 41 )
+gap> #
+gap> # M(11) on 12 points satisfies 4-id:
+gap> #
+gap> P:=AllPrimitiveGroups(NrMovedPoints,12,Size,7920);
+[ M(11) ]
+gap> G:=P[1];
+M(11)
+gap> IdempotentGeneratedProperty(G,4);
+#I  UniversalTransversalProperty: Length(shortreps)=1 Length(reps)=2
+#I  UniversalTransversalProperty: stabsizes of reps=[ [ 24, 1 ], [ 48, 1 ] ]
+#I  UniversalTransversalProperty: stabsizes of shortreps=[ [ 36, 1 ] ]
+#I  UniversalTransversalProperty: testing orbit of: [ 1, 2, 3, 7 ]
+#I  UniversalTransversalProperty: testing orbit of: [ 1, 2, 3, 4 ]
+#I  IdempotentGeneratedProperty: no. of k-partition orbits = 147, no. of k-set orbits = 2
+#I  IdempotentGeneratedProperty: k-RCP holds for all orbit-pairs
+#I  IdempotentGeneratedProperty: k-id holds since the ordered lifts of the Houghton graphs are connected for all orbit-pairs
+true
+gap> Runtimes();  # total run-times in milliseconds
+rec( system_time := 3194, system_time_children := 29, user_time := 4805914, 
+  user_time_children := 41 )
+gap> quit;
