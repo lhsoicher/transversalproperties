@@ -889,7 +889,7 @@ fi;
 P:=Set(P);
 partitionorb:=Set(Orbit(G,P,OnSetsDisjointSets));
 setorb:=Set(Orbit(G,A,OnSets));
-return Graph(G,Concatenation(partitionorb,setorb),act,rel,true);
+return Graph(G,Concatenation(setorb,partitionorb),act,rel,true);
 end;
 
 OrderedLiftOfHoughtonGraph := function(G,P,A)
@@ -902,15 +902,17 @@ OrderedLiftOfHoughtonGraph := function(G,P,A)
 # unless  G  is trivial, in which case  n  is taken to be 1. 
 # If  P  is given as an ordered partition, then  P  is taken to be  Set(P).
 #
-local act,rel,n,partitionorb,setorb,tuplizedpartitionorb,tuplizedsetorb;
+local act,rel,n,partitionorb,setorb,tuplizedpartitionorb,tuplizedsetorb,
+   D,P1,P2;
 
-act:=function(x,g)
+act:=function(x,d)
+# action by direct-product element d in D.
 if IsInt(x[1]) then
    # x is a (non-empty) k-tuple of points
-   return OnTuples(x,g);
+   return Permuted(OnTuples(x,d^P1),d^P2);
 else
    # x is an ordered k-partition
-   return OnTuplesSets(x,g);
+   return Permuted(OnTuplesSets(x,d^P1),d^P2);
 fi;
 end;
 
@@ -947,7 +949,10 @@ partitionorb:=Set(Orbit(G,P,OnSetsDisjointSets));
 tuplizedpartitionorb:=Union(List(partitionorb,PermutationsList));
 setorb:=Set(Orbit(G,A,OnSets));
 tuplizedsetorb:=Union(List(setorb,PermutationsList));
-return Graph(G,Concatenation(tuplizedpartitionorb,tuplizedsetorb),act,rel,true);
+D:=DirectProduct(G,SymmetricGroup([1..Length(A)]));
+P1:=Projection(D,1);
+P2:=Projection(D,2);
+return Graph(D,Concatenation(tuplizedsetorb,tuplizedpartitionorb),act,rel,true);
 end;
 
 TuplizedOrbitHoughtonGraph := OrderedLiftOfHoughtonGraph;
