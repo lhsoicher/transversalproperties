@@ -79,6 +79,9 @@ gap> IdempotentGeneratedProperty(G,3);
 #I  UniversalTransversalProperty: testing orbit of: [ 1, 2, 3 ]
 #I  IdempotentGeneratedProperty: 3-id holds since G is 2-homogeneous, G satisfies 3-ut, and for all 3-set orbit representatives: the ordered lift of the Houghton graph is connected w.r.t. [[1],[2],[3..n]], and the routing graphs checks hold for the  fixed-pair [1,2]
 true
+gap> Runtimes(); # run-times so far in milliseconds.
+rec( system_time := 613, system_time_children := 8, user_time := 1870404, 
+  user_time_children := 2 )
 gap> #
 gap> # Partial result for 3-id for HS on 176 points:
 gap> #
@@ -134,8 +137,8 @@ A = [ 1, 2, 16 ]  routing graphs check =
       157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 168, 169, 170, 171, 
       172, 173, 174, 175, 176 ] ]
 gap> Runtimes(); # run-times so far in milliseconds.
-rec( system_time := 1504, system_time_children := 11, user_time := 2092680, 
-  user_time_children := 24 )
+rec( system_time := 1139, system_time_children := 13, user_time := 2143834, 
+  user_time_children := 21 )
 gap> #
 gap> # Co_3 on 276 points satisfies 3-id:
 gap> #
@@ -154,8 +157,8 @@ gap> IdempotentGeneratedProperty(G,3);
 #I  IdempotentGeneratedProperty: 3-id holds since G is 2-homogeneous, G satisfies 3-ut, and for all 3-set orbit representatives: the ordered lift of the Houghton graph is connected w.r.t. [[1],[2],[3..n]], and the routing graphs checks hold for the  fixed-pair [1,2]
 true
 gap> Runtimes(); # run-times so far in milliseconds.
-rec( system_time := 2935, system_time_children := 19, user_time := 2881190, 
-  user_time_children := 41 )
+rec( system_time := 2559, system_time_children := 26, user_time := 3492851, 
+  user_time_children := 42 )
 gap> #
 gap> # M(11) on 12 points satisfies 4-id:
 gap> #
@@ -174,6 +177,6 @@ gap> IdempotentGeneratedProperty(G,4);
 #I  IdempotentGeneratedProperty: k-id holds since the ordered lifts of the Houghton graphs are connected for all orbit-pairs
 true
 gap> Runtimes();  # total run-times in milliseconds
-rec( system_time := 3194, system_time_children := 29, user_time := 4805914, 
-  user_time_children := 41 )
+rec( system_time := 2996, system_time_children := 63, user_time := 4853302, 
+  user_time_children := 42 )
 gap> quit;
