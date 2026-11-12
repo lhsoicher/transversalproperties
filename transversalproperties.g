@@ -1,5 +1,5 @@
 #
-# Leonard Soicher, 28 September 2026.
+# Leonard Soicher, 12 November 2026.
 #
 # This file contains functions to determine the properties k-et, k-ut,
 # strong k-ut, and k-id of given (finite degree) permutation groups.
@@ -81,18 +81,26 @@ LeastSetRepresentatives := function(G,k)
 #
 # Suppose  G  is a permutation group on  [1..n],
 # where  n:=LargestMovedPoint(G),  and  k  is a 
-# non-negative integer <= n. 
+# non-negative integer <= n.
 # 
 # Then this function returns the set of lex-least 
 # representatives for the orbits of  G  on the
 # k-subsets  of  [1..n].
 #
+local n,K;
 if not (IsPermGroup(G) and IsInt(k)) then
    Error("usage: LeastSetRepresentatives( <PermGrp>, <Int> )");
-elif k<0 or k>LargestMovedPoint(G) then
+fi;
+n:=LargestMovedPoint(G);
+if k<0 or k>n then
    Error("must have  0 <= <k> <= LargestMovedPoint(<G>)");
 fi;
-return Set(CompleteSubgraphs(CompleteGraph(G),k,2),x->SmallestImageSet(G,x));
+if k<=n/2 then
+   K:=CompleteSubgraphs(CompleteGraph(G),k,2);
+else
+   K:=List(CompleteSubgraphs(CompleteGraph(G),n-k,2),x->Difference([1..n],x));
+fi;
+return Set(K,x->SmallestImageSet(G,x));
 end;
 
 IsSetTransitive := function(G,k)
@@ -839,11 +847,11 @@ end;
 OrbitHoughtonGraph := function(G,P,A)
 #
 # returns the orbit Houghton graph w.r.t. the permutation 
-# group  G  on [1..n], the k-partition  P  of  [1..n], and the 
-# (non-empty) k-subset  A  of [1..n].
+# group  G  on [1..n], the G-orbit of the k-partition  P  of [1..n],
+# and the G-orbit of the (non-empty) k-subset  A  of [1..n].
 #
-# The degree  n  of  G  is taken to be its largest moved point,
-# unless  G  is trivial, in which case  n  is taken to be 1. 
+# The degree  n  of  G  is taken to be its largest moved point.
+#
 # If  P  is given as an ordered partition, then  P  is taken to be  Set(P).
 #
 local act,rel,n,partitionorb,setorb;
@@ -878,13 +886,10 @@ if not (IsPermGroup(G) and IsList(P) and IsSet(A)) then
    Error("usage: OrbitHoughtonGraph( <PermGroup>, <List>, <Set> )");
 fi;
 n:=LargestMovedPoint(G);
-if n=0 then
-  n:=1;
-fi;
 if not (A<>[] and Length(A)=Length(P) and IsSubset([1..n],A) 
          and Union(P)=[1..n] and ForAll(P,x->IsSet(x) and x<>[]) 
          and Sum(List(P,Length))=n) then
-   Error("P must be a k-partition and A must be a nonempty k-subset of [1..n]");
+   Error("P must be a k-partition and A must be a nonempty k-subset of [1..LargestMovedPoint(G)]");
 fi;
 P:=Set(P);
 partitionorb:=Set(Orbit(G,P,OnSetsDisjointSets));
@@ -895,11 +900,11 @@ end;
 OrderedLiftOfHoughtonGraph := function(G,P,A)
 #
 # returns the "tuplized" orbit Houghton graph w.r.t. the permutation 
-# group  G  on [1..n],  the k-partition  P  of  [1..n],  and the 
-# (non-empty) k-subset  A  of [1..n].
+# group  G  on [1..n], the G-orbit of the k-partition  P  of [1..n],
+# and the G-orbit of the (non-empty) k-subset  A  of [1..n].
 #
-# The degree  n  of  G  is taken to be its largest moved point,
-# unless  G  is trivial, in which case  n  is taken to be 1. 
+# The degree  n  of  G  is taken to be its largest moved point.
+# 
 # If  P  is given as an ordered partition, then  P  is taken to be  Set(P).
 #
 local act,rel,n,partitionorb,setorb,tuplizedpartitionorb,tuplizedsetorb,
@@ -936,13 +941,10 @@ if not (IsPermGroup(G) and IsList(P) and IsSet(A)) then
    Error("usage: OrderedLiftOfHoughtonGraph( <PermGroup>, <List>, <Set> )");
 fi;
 n:=LargestMovedPoint(G);
-if n=0 then
-  n:=1;
-fi;
 if not (A<>[] and Length(A)=Length(P) and IsSubset([1..n],A) 
          and Union(P)=[1..n] and ForAll(P,x->IsSet(x) and x<>[]) 
          and Sum(List(P,Length))=n) then
-   Error("P must be a k-partition and A must be a nonempty k-subset of [1..n]");
+   Error("P must be a k-partition and A must be a nonempty k-subset of [1..LargestMovedPoint(G)]");
 fi;
 P:=Set(P);
 partitionorb:=Set(Orbit(G,P,OnSetsDisjointSets));
